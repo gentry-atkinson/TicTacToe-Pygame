@@ -24,6 +24,10 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     running = True
 
+    highlighted = None
+    Xs = []
+    Os = []
+
     # Main Game Loop
     while running:
         # Get delta time
@@ -32,6 +36,11 @@ if __name__ == '__main__':
 
         # Get Keyboard Inputs
         keys = pygame.key.get_pressed()
+
+        # Break main loop on quit
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
         SCREEN.blit(BOARD, (0, 0))
         pygame.display.update()
