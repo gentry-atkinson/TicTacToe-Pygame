@@ -9,6 +9,7 @@ import os
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
 FPS = 60
+SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # Load Images
 BOARD = pygame.transform.scale(
@@ -20,7 +21,6 @@ if __name__ == '__main__':
     # Init Game
     pygame.init()
     pygame.display.set_caption('Tic Tac Toe')
-    SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     running = True
 
@@ -32,3 +32,6 @@ if __name__ == '__main__':
 
         # Get Keyboard Inputs
         keys = pygame.key.get_pressed()
+
+        SCREEN.blit(BOARD, (0, 0))
+        pygame.display.update()
