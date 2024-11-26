@@ -4,7 +4,7 @@
 
 import pygame
 import os
-from random import randint, choice
+from random import randint, choice, shuffle
 
 # Global Constants
 WINDOW_WIDTH = 800
@@ -65,42 +65,55 @@ def computer_move(Xs, Os) -> tuple:
         possible_moves = possible_moves.difference(Xs, Os)
         return list(possible_moves)
     
-    def evaluate(Xs, Os) -> int:
+    def evaluate(Xs, Os, move) -> int:
         score = 0
-        # Winning is good
-        if o_winner(Os):
-            score += 100
+        r = move[0]
+        c = move[1]
         
         # Rows w/ two Os is good
-        for r in range(3):
-            if len(set([(r,0), (r,1), (r,2)]).intersection(Os)) >= 2:
-                score += 10
+        n = len(set([(r,0), (r,1), (r,2)]).intersection(Os))
+        score += 10*n
 
         # Columns w/ two Os is good
-        for c in range(3):
-            if len(set([(0, c), (1, c), (2, c)]).intersection(Os)) >= 2:
-                score += 10
+        n = len(set([(0, c), (1, c), (2, c)]).intersection(Os))
+        score += 10*n
 
-        # Diagnol w/ two Os is good
-        if len(set([(0, 0), (1, 1), (2, 2)]).intersection(Os)) >= 2:
-                score += 20
+        # # Diagnol w/ two Os is good
+        # n = len(set([(0, 0), (1, 1), (2, 2)]).intersection(Os))
+        # score += 20*n
 
-        # Diagnol w/ two Os is good
-        if len(set([(0, 2), (1, 1), (2, 0)]).intersection(Os)) >= 2:
-                score += 20
+        # # Diagnol w/ two Os is good
+        # n = len(set([(0, 2), (1, 1), (2, 0)]).intersection(Os))
+        # score += 20*n
+
+        # Rows w/ two Xs is bad
+        n = len(set([(r,0), (r,1), (r,2)]).intersection(Xs))
+        score += 15*n
+
+        # Columns w/ two Xs is good
+        n = len(set([(0, c), (1, c), (2, c)]).intersection(Xs))
+        score += 15
+
+        # Diagnol w/ two Xs is good
+        # n = len(set([(0, 0), (1, 1), (2, 2)]).intersection(Xs))
+        # score += 20 * n
+
+        # # Diagnol w/ two Xs is good
+        # n = len(set([(0, 2), (1, 1), (2, 0)]).intersection(Xs))
+        # score += 20*n
 
         return score
 
     # Evaluate every possible move
     possible_moves = get_moves(Xs, Os)
-    evals = dict()
-    for move in possible_moves:
-        print('move', move)
-        new_Os = Os.copy()
-        new_Os.add(move)
-        evals[move] = evaluate(Xs, new_Os)
+    shuffle(possible_moves)
+    evals = {move : evaluate(Xs, Os, move) for move in possible_moves}
+    # for move in possible_moves:
+    #     new_Os = Os.copy()
+    #     new_Os.add(move)
+    #     evals[move] = evaluate(Xs, new_Os)
     evals = {i:j for (i, j) in sorted(evals.items(), key=lambda x: x[1])}
-
+    print(evals)
     # Return the move with the highest evaluation
     return list(evals.keys())[-1]
 
