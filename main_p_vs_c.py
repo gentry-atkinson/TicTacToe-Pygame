@@ -71,28 +71,29 @@ def computer_move(Xs, Os) -> tuple:
         c = move[1]
         
         # Rows w/ two Os is good
-        n = len(set([(r,0), (r,1), (r,2)]).intersection(Os))
-        score += 10*n
-
         # Columns w/ two Os is good
-        n = len(set([(0, c), (1, c), (2, c)]).intersection(Os))
-        score += 10*n
+        for x, y in Os:
+            if r == x:
+                score += 10
+            if c == y:
+                score += 10
 
         # # Diagnol w/ two Os is good
-        # n = len(set([(0, 0), (1, 1), (2, 2)]).intersection(Os))
-        # score += 20*n
+        if r==c:
+            score += 10
 
-        # # Diagnol w/ two Os is good
-        # n = len(set([(0, 2), (1, 1), (2, 0)]).intersection(Os))
-        # score += 20*n
+        # Corners are good
+        if move in [(0,0), (0,2), (2,2), (2,0)]:
+            score += 10
+        
 
         # Rows w/ two Xs is bad
-        n = len(set([(r,0), (r,1), (r,2)]).intersection(Xs))
-        score += 15*n
-
         # Columns w/ two Xs is good
-        n = len(set([(0, c), (1, c), (2, c)]).intersection(Xs))
-        score += 15
+        for x, y in Xs:
+            if r == x:
+                score += 15
+            if c == y:
+                score += 15
 
         # Diagnol w/ two Xs is good
         # n = len(set([(0, 0), (1, 1), (2, 2)]).intersection(Xs))
