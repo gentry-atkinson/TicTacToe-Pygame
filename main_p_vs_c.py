@@ -11,7 +11,7 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
 ITEM_WIDTH = 130
 ITEM_HEIGHT = 130
-FPS = 20
+FPS = 60
 SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # Load Images
@@ -70,38 +70,61 @@ def computer_move(Xs, Os) -> tuple:
         r = move[0]
         c = move[1]
         
-        # Rows w/ two Os is good
-        # Columns w/ two Os is good
-        for x, y in Os:
-            if r == x:
-                score += 10
-            if c == y:
-                score += 10
+        
+        os_in_row = len(set([(r,0), (r,1), (r,2)]).intersection(Os))
+        xs_in_row = len(set([(r,0), (r,1), (r,2)]).intersection(Xs))
 
-        # # Diagnol w/ two Os is good
-        if r==c:
+        # Rows w/ two Os is good
+        if os_in_row == 2:
+            score += 100
+        elif xs_in_row ==2:
+            score += 99
+        elif os_in_row == 1 and xs_in_row==0:
             score += 10
+        elif xs_in_row == 1:
+            score += 5
+
+        os_in_col = len(set([(0,c), (1,c), (2,c)]).intersection(Os))
+        xs_in_col = len(set([(0,c), (1,c), (2,c)]).intersection(Xs))
+        # Columns w/ two Os is good
+        if os_in_col == 2:
+            score += 100
+        elif xs_in_col ==2:
+            score += 99
+        elif os_in_col == 1 and xs_in_col==0:
+            score += 10
+        elif xs_in_col == 1:
+            score += 5
+
+        # # \ Diagnol w/ two Os is good
+        if r==c:
+            os_in_backslash = len(set([(0,0), (1,1), (2,2)]).intersection(Os))
+            xs_in_backslash = len(set([(0,0), (1,1), (2,2)]).intersection(Xs))
+            if os_in_backslash == 2:
+                score += 100
+            elif xs_in_backslash == 2:
+                score += 99
+            elif os_in_backslash == 1 and xs_in_backslash == 0:
+                score += 11
+            elif xs_in_backslash == 1:
+                score += 5
+
+        # # \ Diagnol w/ two Os is good
+        if c==(2-r):
+            os_in_forwardslash = len(set([(0,2), (1,1), (2,0)]).intersection(Os))
+            xs_in_forwardslash = len(set([(0,2), (1,1), (2,0)]).intersection(Xs))
+            if os_in_forwardslash == 2:
+                score += 100
+            elif xs_in_forwardslash == 2:
+                score += 99
+            elif os_in_forwardslash == 1 and xs_in_forwardslash == 0:
+                score += 11
+            elif xs_in_forwardslash == 1:
+                score += 5
 
         # Corners are good
         if move in [(0,0), (0,2), (2,2), (2,0)]:
             score += 10
-        
-
-        # Rows w/ two Xs is bad
-        # Columns w/ two Xs is good
-        for x, y in Xs:
-            if r == x:
-                score += 15
-            if c == y:
-                score += 15
-
-        # Diagnol w/ two Xs is good
-        # n = len(set([(0, 0), (1, 1), (2, 2)]).intersection(Xs))
-        # score += 20 * n
-
-        # # Diagnol w/ two Xs is good
-        # n = len(set([(0, 2), (1, 1), (2, 0)]).intersection(Xs))
-        # score += 20*n
 
         return score
 
@@ -109,12 +132,8 @@ def computer_move(Xs, Os) -> tuple:
     possible_moves = get_moves(Xs, Os)
     shuffle(possible_moves)
     evals = {move : evaluate(Xs, Os, move) for move in possible_moves}
-    # for move in possible_moves:
-    #     new_Os = Os.copy()
-    #     new_Os.add(move)
-    #     evals[move] = evaluate(Xs, new_Os)
     evals = {i:j for (i, j) in sorted(evals.items(), key=lambda x: x[1])}
-    print(evals)
+    
     # Return the move with the highest evaluation
     return list(evals.keys())[-1]
 
@@ -151,7 +170,7 @@ if __name__ == '__main__':
     pygame.display.set_caption('Tic Tac Toe')
     clock = pygame.time.Clock()
     running = True
-    pygame.key.set_repeat()
+    pygame.key.set_repeat(100)
 
     # Main Font
     main_font = pygame.font.Font(os.path.join('font', 'slkscr.ttf'), 60)
@@ -180,9 +199,16 @@ if __name__ == '__main__':
         dt = clock.get_time()
 
         new_mark = None
-        # Get Keyboard Inputs
-        if player_turn:
-            keys = pygame.key.get_pressed()
+        keys = None
+
+        # Break main loop on quit
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                keys = pygame.key.get_pressed()
+
+        if player_turn and keys:
             # Handle keyboard input
             if keys[pygame.K_UP] and pressable:
                 highlighted = (max(highlighted[0]-1, 0), highlighted[1])
@@ -229,12 +255,6 @@ if __name__ == '__main__':
                     win_str = "O wins"
                     O_score += 1
             player_turn = True
-        
-
-        # Break main loop on quit
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
 
         #Render Scores
         x_score_lbl = main_font.render(str(X_score), 1, (171, 108, 77))
