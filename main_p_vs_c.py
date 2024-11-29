@@ -163,28 +163,18 @@ def o_winner(Os) -> bool:
         return True
     return False
 
-if __name__ == '__main__':
-
-    # Init Game
-    pygame.init()
-    pygame.display.set_caption('Tic Tac Toe')
-    clock = pygame.time.Clock()
+def main_game_loop():
+    global main_font
+    global clock
+    
     running = True
-    pygame.key.set_repeat(100)
-
-    # Main Font
-    main_font = pygame.font.Font(os.path.join('font', 'slkscr.ttf'), 60)
-
     highlighted = (1,1)
     Xs = set()
     Os = set()
-
     X_score = 0
     O_score = 0
-
     pressable = True
     player_turn = True
-
     win_str = ""
     new_mark = None
 
@@ -273,3 +263,15 @@ if __name__ == '__main__':
             win_str = ""
             player_turn = True
             pygame.time.delay(1000)
+
+if __name__ == '__main__':
+    # Init Game
+    pygame.init()
+    pygame.display.set_caption('Tic Tac Toe')
+    clock = pygame.time.Clock()
+    pygame.key.set_repeat(100)
+
+    # Main Font
+    main_font = pygame.font.Font(os.path.join('font', 'slkscr.ttf'), 60)
+    
+    main_game_loop()
