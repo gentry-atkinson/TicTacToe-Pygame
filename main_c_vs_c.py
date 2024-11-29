@@ -59,7 +59,7 @@ def draw(screen, highlighted, Xs, Os, x_score_label, o_score_label, win_label):
     if win_label:
         screen.blit(win_label, (120, 730))
 
-def computer_move(Xs, Os) -> tuple:
+def o_computer_move(Xs, Os) -> tuple:
     def get_moves(Xs, Os): 
         possible_moves = set([(a, b) for a in range(3) for b in range(3)])
         possible_moves = possible_moves.difference(Xs, Os)
@@ -137,6 +137,84 @@ def computer_move(Xs, Os) -> tuple:
     # Return the move with the highest evaluation
     return list(evals.keys())[-1]
 
+def x_computer_move(Xs, Os) -> tuple:
+    def get_moves(Xs, Os): 
+        possible_moves = set([(a, b) for a in range(3) for b in range(3)])
+        possible_moves = possible_moves.difference(Xs, Os)
+        return list(possible_moves)
+    
+    def evaluate(Xs, Os, move) -> int:
+        score = 0
+        r = move[0]
+        c = move[1]
+        
+        
+        os_in_row = len(set([(r,0), (r,1), (r,2)]).intersection(Os))
+        xs_in_row = len(set([(r,0), (r,1), (r,2)]).intersection(Xs))
+
+        # Rows w/ two xs is good
+        if xs_in_row == 2:
+            score += 100
+        elif os_in_row ==2:
+            score += 99
+        elif xs_in_row == 1 and os_in_row==0:
+            score += 10
+        elif os_in_row == 1:
+            score += 5
+
+        os_in_col = len(set([(0,c), (1,c), (2,c)]).intersection(Os))
+        xs_in_col = len(set([(0,c), (1,c), (2,c)]).intersection(Xs))
+        # Columns w/ two xs is good
+        if xs_in_col == 2:
+            score += 100
+        elif os_in_col ==2:
+            score += 99
+        elif xs_in_col == 1 and os_in_col==0:
+            score += 10
+        elif xs_in_col == 1:
+            score += 5
+
+        # # \ Diagnol w/ two Os is good
+        if r==c:
+            os_in_backslash = len(set([(0,0), (1,1), (2,2)]).intersection(Os))
+            xs_in_backslash = len(set([(0,0), (1,1), (2,2)]).intersection(Xs))
+            if xs_in_backslash == 2:
+                score += 100
+            elif os_in_backslash == 2:
+                score += 99
+            elif xs_in_backslash == 1 and os_in_backslash == 0:
+                score += 11
+            elif os_in_backslash == 1:
+                score += 5
+
+        # # \ Diagnol w/ two Os is good
+        if c==(2-r):
+            os_in_forwardslash = len(set([(0,2), (1,1), (2,0)]).intersection(Os))
+            xs_in_forwardslash = len(set([(0,2), (1,1), (2,0)]).intersection(Xs))
+            if xs_in_forwardslash == 2:
+                score += 100
+            elif os_in_forwardslash == 2:
+                score += 99
+            elif xs_in_forwardslash == 1 and os_in_forwardslash == 0:
+                score += 11
+            elif os_in_forwardslash == 1:
+                score += 5
+
+        # Corners are good
+        if move in [(0,0), (0,2), (2,2), (2,0)]:
+            score += 10
+
+        return score
+
+    # Evaluate every possible move
+    possible_moves = get_moves(Xs, Os)
+    shuffle(possible_moves)
+    evals = {move : evaluate(Xs, Os, move) for move in possible_moves}
+    evals = {i:j for (i, j) in sorted(evals.items(), key=lambda x: x[1])}
+    
+    # Return the move with the highest evaluation
+    return list(evals.keys())[-1]
+
 def x_winner(Xs) -> bool:
     for row in range(0,3):
         if (row, 0) in Xs and  (row, 1) in Xs and  (row, 2) in Xs:
@@ -181,9 +259,7 @@ if __name__ == '__main__':
 
     X_score = 0
     O_score = 0
-
-    pressable = True
-    player_turn = True
+    x_turn = True
 
     win_str = ""
     new_mark = None
@@ -198,46 +274,28 @@ if __name__ == '__main__':
         clock.tick(FPS)
         dt = clock.get_time()
 
-        new_mark = None
-        # Get Keyboard Inputs
-        if player_turn:
-            keys = pygame.key.get_pressed()
-            # Handle keyboard input
-            if keys[pygame.K_UP] and pressable:
-                highlighted = (max(highlighted[0]-1, 0), highlighted[1])
-                pressable = False
-            elif keys[pygame.K_DOWN] and pressable:
-                highlighted = (min(highlighted[0]+1, 2), highlighted[1])
-                pressable = False
-            elif keys[pygame.K_LEFT] and pressable:
-                highlighted = (highlighted[0], max(highlighted[1]-1, 0))
-                pressable = False
-            elif keys[pygame.K_RIGHT] and pressable:
-                highlighted = (highlighted[0], min(highlighted[1]+1, 2))
-                pressable = False
-            elif keys[pygame.K_SPACE] and pressable:
-                new_mark = highlighted
-                player_turn = False
-                pressable = False
-            else:
-                pressable = True
-
-            if new_mark in Xs or new_mark in Os:
+        if x_turn:
+            new_mark = None
+            pygame.time.delay(200)
+            new_mark = x_computer_move(Xs, Os)
+                
+            if new_mark in Os or new_mark in Xs:
                 win_str = "Duplicate mark."
                 O_score += 1
             else:
-                if new_mark:
-                    Xs.add(new_mark)
+                Xs.add(new_mark)
                 if x_winner(Xs):
-                    win_str = "X wins!"
+                    win_str = "X wins"
                     X_score += 1
-            new_mark = None
-
-        elif len(Xs) + len(Os) == 9:
+            x_turn = False
+        
+        
+        if len(Xs) + len(Os) == 9:
             win_str = "Cat's Game"
 
-        elif not player_turn and win_str == "":
-            new_mark = computer_move(Xs, Os)
+        elif win_str == "":
+            pygame.time.delay(200)
+            new_mark = o_computer_move(Xs, Os)
             
             if new_mark in Os or new_mark in Xs:
                 win_str = "Duplicate mark."
@@ -247,7 +305,7 @@ if __name__ == '__main__':
                 if o_winner(Os):
                     win_str = "O wins"
                     O_score += 1
-            player_turn = True
+            x_turn = True
         
 
         # Break main loop on quit
@@ -270,5 +328,5 @@ if __name__ == '__main__':
             Xs = set()
             Os = set()
             win_str = ""
-            player_turn = True
+            x_turn = True
             pygame.time.delay(1000)
